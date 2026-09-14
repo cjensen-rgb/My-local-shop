@@ -1,0 +1,14 @@
+CREATE PROCEDURE dbo.GetNextInvoiceNumber  
+(  
+    @DistrictID UNIQUEIDENTIFIER,  
+    @NextNumber INT OUTPUT  
+)  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+  
+    UPDATE dbo.InvoiceNumberSequence  
+    SET @NextNumber = NextInvoiceNumber,  
+        NextInvoiceNumber = NextInvoiceNumber + 1  
+    WHERE DistrictID = @DistrictID;  
+END;  
