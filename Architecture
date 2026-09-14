@@ -1,0 +1,120 @@
+# My-Local-Shop Architecture
+
+## Formål
+My-Local-Shop er en digital platform, der understøtter lokale fællesskaber, handel og samarbejde mellem borgere, virksomheder og distrikter.
+Platformen er designet som en skalerbar løsning, hvor hvert distrikt fungerer som et selvstændigt lokalt økosystem med egne medlemmer, aktiviteter og transaktioner.
+---
+## Hovedkomponenter
+### Contact
+Contact er platformens centrale kerneobjekt.
+Alle personer og virksomheder oprettes først som Contact.
+Contact kan efterfølgende tilknyttes forskellige roller gennem ContactType.
+
+Eksempler:
+- Shopper
+- Commercial Member
+- District Administrator
+- System Administrator
+---
+### Shopper
+En Shopper repræsenterer en privat person.
+En Shopper kan:
+- Oprette profil
+- Modtage opslag
+- Følge virksomheder
+- Foretage køb
+- Deltage i fællesskaber
+- Modtage bonus og belønninger
+---
+### Commercial Member
+Et kommercielt medlem repræsenterer en virksomhed eller organisation.
+Virksomheden kan:
+- Oprette ShopProfile
+- Publicere opslag
+- Udsende Push Notifications
+- Oprette kampagner
+- Modtage Purchase Transactions
+- Tegne abonnementer og købe services
+---
+### District
+Et District repræsenterer et geografisk område.
+Eksempler:
+- District Thy
+- District Mors
+- District Skive
+Et District indeholder:
+- Shoppere
+- Virksomheder
+- KUlturinstitutioner
+- Aktiviteter
+- Revenue Streams
+---
+### ShopProfile
+ShopProfile indeholder virksomhedens offentlige præsentation.
+Eksempelvis:
+- Beskrivelse
+- Billeder
+- Storytelling
+- Video
+- Podcast
+- Kontaktoplysninger
+- VareKategorier
+- Brands
+- Lokation
+---
+### ShopperProfile
+ShopperProfile indeholder brugerens interesser og præferencer.
+Eksempelvis:
+- favoritButikker
+- Interesser
+- FavoritKategorier
+- Lokation
+- Notifikationsindstillinger
+- ShopTalkFriendType
+- shopTalkFriends
+---
+## Database Arkitektur
+Platformen er baseret på Microsoft SQL Server.
+De vigtigste lag er:
+### Tables
+Vedligeholder forretningsdata.
+### Views
+Præsenterer data til rapportering og brugergrænseflader.
+### Stored Procedures
+Indeholder forretningslogik.
+Eksempel:
+- CreateContact
+- CreateShopper
+- CreateDistrict
+- CreateShopProfile
+### Functions
+Genanvendelige beregninger og hjælpefunktioner.
+---
+## Revenue Model
+Platformens indtægter kan komme fra:
+- Abonnementer
+- Reklameindrykninger
+- Push Notifications
+- Sponsorerede kampagner
+- Premium Services
+Alle indtægter registreres som RevenueTransactions.
+---
+## District Thy Demonstration
+District Thy anvendes som demonstrations- og testmiljø.
+Formålet er at simulere:
+- Kommercielle medlemmer
+- Shopper medlemmer
+- Købstransaktioner
+- Bonusordninger
+- Revenue Sharing
+for at validere platformens forretningsmodel og tekniske arkitektur.
+---
+## Versionsstyring
+Projektet versionsstyres via GitHub.
+Alle ændringer til:
+- Database
+- Stored Procedures
+- Views
+- Dokumentation
+- Testdata
+gemmes i repository'et for at sikre sporbarhed og historik.
