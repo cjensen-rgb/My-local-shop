@@ -1,0 +1,96 @@
+CREATE PROCEDURE dbo.CreateShopper  
+(  
+    @Name NVARCHAR(200),  
+    @Email NVARCHAR(200),  
+    @Mobile NVARCHAR(50),  
+    @AddressLine1 NVARCHAR(200),  
+    @ZipCode NVARCHAR(10)  
+)  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+  
+    DECLARE @ZipID UNIQUEIDENTIFIER;  
+    DECLARE @DistrictID UNIQUEIDENTIFIER;  
+    DECLARE @AddressID UNIQUEIDENTIFIER;  
+    DECLARE @ContactID UNIQUEIDENTIFIER;  
+    DECLARE @ShopperID UNIQUEIDENTIFIER;  
+    DECLARE @ShopperTypeID UNIQUEIDENTIFIER;  
+  
+    ------------------------------------------------------------  
+    -- 1. Find ZipID  
+    ------------------------------------------------------------  
+    SELECT @ZipID = ZipID  
+    FROM dbo.Zip  
+    WHERE ZipCode = @ZipCode;  
+  
+    IF @ZipID IS NULL  
+    BEGIN  
+        RAISERROR('ZipCode not found in dbo.Zip', 16, 1);  
+        RETURN;  
+    END  
+  
+    ------------------------------------------------------------  
+    -- 2. Find DistrictID  
+    ------------------------------------------------------------  
+    SELECT @DistrictID = DistrictID  
+    FROM dbo.Zip  
+    WHERE ZipCode = @ZipCode;  
+  
+    IF @DistrictID IS NULL  
+    BEGIN  
+        RAISERROR('DistrictID not found for this ZipCode', 16, 1);  
+        RETURN;  
+    END  
+  
+    ------------------------------------------------------------  
+    -- 3. Find ContactTypeID for Shopper  
+    ------------------------------------------------------------  
+    SELECT @ShopperTypeID = ContactTypeID  
+    FROM dbo.ContactType  
+    WHERE ContactTypeName = 'Shopper';  
+  
+    IF @ShopperTypeID IS NULL  
+    BEGIN  
+        RAISERROR('ContactTypeName ''Shopper'' not found in dbo.ContactType', 16, 1);  
+        RETURN;  
+    END  
+  
+    ------------------------------------------------------------  
+    -- 4. Create Address (AddressLine1 + ZipID)  
+    ------------------------------------------------------------  
+    INSERT INTO dbo.Address (AddressLine1, ZipID)  
+    VALUES (@AddressLine1, @ZipID);  
+  
+    SELECT @AddressID = AddressID  
+    FROM dbo.Address  
+    WHERE AddressLine1 = @AddressLine1 AND ZipID = @ZipID  
+    ORDER BY CreatedAt DESC;  
+  
+    ------------------------------------------------------------  
+    -- 5. Create Contact (Shopper)  
+    ------------------------------------------------------------  
+    INSERT INTO dbo.Contact (Name, Email, Mobile, AddressID, DistrictID, ContactTypeID)  
+    VALUES (@Name, @Email, @Mobile, @AddressID, @DistrictID, @ShopperTypeID);  
+  
+    SELECT @ContactID = ContactID  
+    FROM dbo.Contact  
+    WHERE AddressID = @AddressID AND DistrictID = @DistrictID  
+    ORDER BY CreatedAt DESC;  
+  
+    ------------------------------------------------------------  
+    -- 6. Create Shopper  
+    ------------------------------------------------------------  
+    INSERT INTO dbo.Shopper (ContactID, DistrictID)  
+    VALUES (@ContactID, @DistrictID);  
+  
+    SELECT @ShopperID = ShopperID  
+    FROM dbo.Shopper  
+    WHERE ContactID = @ContactID;  
+  
+    ------------------------------------------------------------  
+    -- 7. Return ShopperID  
+    ------------------------------------------------------------  
+    SELECT @ShopperID AS ShopperID;  
+  
+END  
