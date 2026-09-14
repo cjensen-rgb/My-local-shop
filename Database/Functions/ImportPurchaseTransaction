@@ -1,0 +1,208 @@
+/********************************************************************************************  
+    Procedure:      dbo.ImportPurchaseTransaction  
+    Version:        3.1.4  
+    DateTime:       2026-08-27 13:45  
+    UpdatedBy:      CoPilot and Claes Jensen  
+    Description:    Import af købstransaktion + bonusberegning (Café/Culture)  
+********************************************************************************************/  
+CREATE   PROCEDURE dbo.ImportPurchaseTransaction  
+(  
+    @ShopID          UNIQUEIDENTIFIER,  
+    @ShopperID       UNIQUEIDENTIFIER,  
+    @PurchaseAmount  DECIMAL(18,2),  
+    @TransactionDate DATE,  
+    @TransactionTime TIME(0)  
+)  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+  
+    DECLARE  
+        @DistrictID          UNIQUEIDENTIFIER,  
+        @AcceptCafeBonus     BIT,  
+        @AcceptCultureBonus  BIT,  
+        @CafeBonusRate       DECIMAL(10,4),  
+        @CultureBonusRate    DECIMAL(10,4),  
+        @CafeBonus           DECIMAL(18,2),  
+        @CultureBonus        DECIMAL(18,2),  
+        @TotalBonus          DECIMAL(18,2),  
+        @OutPaymentID        UNIQUEIDENTIFIER,  
+        @CreatedAt           DATETIME2,  
+        @PeriodStartDate     DATE,  
+        @Year                INT,  
+        @Month               INT;  
+  
+    SET @CreatedAt       = SYSDATETIME();  
+    SET @OutPaymentID    = NEWID();  
+    SET @Year            = YEAR(@TransactionDate);  
+    SET @Month           = MONTH(@TransactionDate);  
+    SET @PeriodStartDate = DATEFROMPARTS(@Year, @Month, 1);  
+  
+    ------------------------------------------------------------------------  
+    -- 1) DistrictID fra ShopView  
+    ------------------------------------------------------------------------  
+    SELECT @DistrictID = sv.DistrictID  
+    FROM dbo.ShopView sv  
+    WHERE sv.ShopID = @ShopID;  
+  
+    IF @DistrictID IS NULL  
+        RETURN;  
+  
+    ------------------------------------------------------------------------  
+    -- 2) AcceptCafeBonus / AcceptCultureBonus fra Shop  
+    ------------------------------------------------------------------------  
+    SELECT   
+        @AcceptCafeBonus     = AcceptCafeBonus,  
+        @AcceptCultureBonus  = AcceptCultureBonus  
+    FROM dbo.Shop  
+    WHERE ShopID = @ShopID;  
+  
+    ------------------------------------------------------------------------  
+    -- 3) Bonusrater fra CafeeCultureBonusRate  
+    ------------------------------------------------------------------------  
+    SELECT   
+        @CafeBonusRate    = CafePercent,  
+        @CultureBonusRate = CulturePercent  
+    FROM dbo.CafeeCultureBonusRate;  
+  
+    ------------------------------------------------------------------------  
+    -- 4) Beregn bonus  
+    ------------------------------------------------------------------------  
+    SET @CafeBonus = CASE WHEN @AcceptCafeBonus = 1   
+                          THEN @PurchaseAmount * @CafeBonusRate   
+                          ELSE 0 END;  
+  
+    SET @CultureBonus = CASE WHEN @AcceptCultureBonus = 1   
+                             THEN @PurchaseAmount * @CultureBonusRate   
+                             ELSE 0 END;  
+  
+    SET @TotalBonus = @CafeBonus + @CultureBonus;  
+  
+    ------------------------------------------------------------------------  
+    -- 5) PurchaseTransactions  
+    ------------------------------------------------------------------------  
+    INSERT INTO dbo.PurchaseTransactions  
+    (  
+        TransactionID,  
+        ShopID,  
+        ShopperID,  
+        Amount,  
+        TransactionDate,  
+        TransactionTime,  
+        CreatedAt  
+    )  
+    VALUES  
+    (  
+        NEWID(),  
+        @ShopID,  
+        @ShopperID,  
+        @PurchaseAmount,  
+        @TransactionDate,  
+        @TransactionTime,  
+        @CreatedAt  
+    );  
+  
+    ------------------------------------------------------------------------  
+    -- 6) ShopperCafeLedger  
+    ------------------------------------------------------------------------  
+    IF @CafeBonus > 0  
+    BEGIN  
+        INSERT INTO dbo.ShopperCafeLedger  
+        (  
+            CafeLedgerID,  
+            ShopperID,  
+            ShopID,  
+            DistrictID,  
+            Amount,  
+            Year,  
+            Month,  
+            PeriodStartDate,  
+            CreatedAt  
+        )  
+        VALUES  
+        (  
+            NEWID(),  
+            @ShopperID,  
+            @ShopID,  
+            @DistrictID,  
+            @CafeBonus,  
+            @Year,  
+            @Month,  
+            @PeriodStartDate,  
+            @CreatedAt  
+        );  
+    END;  
+  
+    ------------------------------------------------------------------------  
+    -- 7) ShopperCultureLedger  
+    ------------------------------------------------------------------------  
+    IF @CultureBonus > 0  
+    BEGIN  
+        INSERT INTO dbo.ShopperCultureLedger  
+        (  
+            CultureLedgerID,  
+            ShopperID,  
+            ShopID,  
+            DistrictID,  
+            Amount,  
+            Year,  
+            Month,  
+            PeriodStartDate,  
+            CreatedAt  
+        )  
+        VALUES  
+        (  
+            NEWID(),  
+            @ShopperID,  
+            @ShopID,  
+            @DistrictID,  
+            @CultureBonus,  
+            @Year,  
+            @Month,  
+            @PeriodStartDate,  
+            @CreatedAt  
+        );  
+    END;  
+  
+    ------------------------------------------------------------------------  
+    -- 8) OutPayment  
+    ------------------------------------------------------------------------  
+    IF @TotalBonus > 0  
+    BEGIN  
+        INSERT INTO my_local_shop_com_db_shop_datamodel.dbo.OutPayment  
+        (  
+            OutPaymentID,  
+            ShopperID,  
+            ShopID,  
+            DistrictID,  
+            Amount,  
+            MobilePayTransactionID,  
+            CreatedAt,  
+            Settled,  
+            SettledAt,  
+            PaymentType,  
+            BankSentAt,  
+            BankReference,  
+            SourceTransactionID,  
+            BonusTypeID  
+        )  
+        VALUES  
+        (  
+            @OutPaymentID,  
+            @ShopperID,  
+            @ShopID,  
+            @DistrictID,  
+            @TotalBonus,  
+            NULL,  
+            @CreatedAt,  
+            0,  
+            NULL,  
+            'Bonus',  
+            NULL,  
+            NULL,  
+            NULL,  
+            NULL  
+        );  
+    END;  
+  
+END;  
