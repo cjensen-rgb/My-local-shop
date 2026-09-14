@@ -1,1 +1,79 @@
+Kontaktoprettelse
+Alle deltagere i systemet oprettes via den centrale procedure:
 
+Ved oprettelsen angives en ContactType, som afgør kontaktens rolle i systemet.
+Eksempler:
+Shopper
+Commercial Member
+District Company
+Association
+Other Business Types
+CreateContact sikrer en ensartet registrering af alle personer og virksomheder på platformen.
+
+Shopper Flow
+Registrering
+En borger registreres som Shopper.
+
+Der oprettes:
+Contact
+Shopper
+Interesseprofil
+Geografisk tilknytning
+Aktivering
+
+Når Shopper er aktiveret kan brugeren:
+Følge butikker
+Modtage opslag
+Modtage Push Notifications
+Deltage i kampagner
+Foretage køb
+Køb
+
+Alle køb registreres som PurchaseTransactions og hentes direkte fra enten MobilePay eller fra vores egen Instant MLSPay
+Der registreres blandt andet:
+Shopper
+Shop
+Beløb
+Tidspunkt
+District
+Commercial Member Flow
+Registrering
+
+En virksomhed registreres via CreateContact som Commercial Member vd følgende ContactTypes:
+ContactTypes Commercial Members:
+Lokal Udvalgsbutik (Shop)
+ThirdPartBusiness
+BrandHolder
+Lokal Dagligvarebutik (butiksareal under 1000 m2)
+Lokal TV
+Lokal Nærbutik (Tankstation, Kiosk etc.)
+Lokal politiker
+Landspolitiker (fra lokale kreds)
+landsdækkende TV
+Lokal Avis
+Regionspolitiker
+EU Politiker
+Kommunalpolitiker
+Landsdækkende Nyhedsmedie
+
+Ved "Shop" oprettes:
+Contact
+Shop
+ShopProfile
+Profilopbygning
+
+Virksomheden kan:
+Oprette StoryTelling indhold
+Oprette opslag
+Oprette tilbud
+Oprette events
+Oprette kampagner
+Udsende Push Notifications
+Deltage i BINGO
+Øge sin Synlighed
+
+Virksomheden eksponeres overfor relevante Shoppere gennem MatchMotoren på baggrund af:
+Geografi (district)
+Interesser
+Kategorier
+Tidligere aktivitet
