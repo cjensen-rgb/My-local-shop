@@ -1,0 +1,38 @@
+/********************************************************************************************  
+Procedure: AutoApproveShopper  
+Version: 1.0  
+Created: 2026-07-08  
+Author: My-local-shop.com / Claes  
+Purpose:  
+    Automatisk godkendelse af shoppere og andre ikke-commercielle medlemmer.  
+    Flow:  
+        A = Ansøgning  
+        B = Under behandling (system modtaget)  
+        G = Godkendt automatisk  
+        P = Profil udfyldt  
+        T = Aktiv (gratis medlem)  
+  
+Notes:  
+    - Ingen ambassadør involveret.  
+    - Bruges kun når ContactType.CommercialMember = 0.  
+*********************************************************************************************/  
+CREATE   PROCEDURE dbo.AutoApproveShopper  
+(  
+    @ContactID UNIQUEIDENTIFIER  
+)  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+  
+    -- Step 1: Under behandling  
+    UPDATE dbo.Contact  
+    SET StatusCode = 'B',  
+        LastUpdated = SYSDATETIME()  
+    WHERE ContactID = @ContactID;  
+  
+    -- Step 2: Godkendt automatisk  
+    UPDATE dbo.Contact  
+    SET StatusCode = 'G',  
+        LastUpdated = SYSDATETIME()  
+    WHERE ContactID = @ContactID;  
+END  
