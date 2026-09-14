@@ -1,0 +1,28 @@
+CREATE   PROCEDURE dbo.FixRevenueSplitRates  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+  
+    ;WITH RateCalc AS  
+    (  
+        SELECT  
+            RateID,  
+            ScopeLevelID,  
+            OpsPercent,  
+            AmbaPercent,  
+            AmbassadorPercent,  
+            ShopperPercent,  
+  
+            OpsPercent  
+            + AmbaPercent  
+            + AmbassadorPercent  
+            + ShopperPercent AS NonReserveSum  
+        FROM dbo.RevenueSplitRate  
+    )  
+    UPDATE r  
+    SET r.ReservePercent = CAST(1.0 - rc.NonReserveSum AS DECIMAL(10,4))  
+    FROM dbo.RevenueSplitRate r  
+    JOIN RateCalc rc  
+        ON r.RateID = rc.RateID  
+        AND r.ScopeLevelID = rc.ScopeLevelID;  
+END;  
