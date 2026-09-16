@@ -1,0 +1,21 @@
+CREATE OR ALTER PROCEDURE dbo.OpretContactFase1
+
+    @Name NVARCHAR(200),
+    @Title NVARCHAR(200) = NULL,
+    @Email NVARCHAR(255) = NULL,
+    @Mobile NVARCHAR(50) = NULL,
+
+    @AddressLine1 NVARCHAR(255),
+    @AddressLine2 NVARCHAR(255) = NULL,
+    @ZipCode NVARCHAR(20),
+
+    @BirthDate DATE = NULL,
+    @SexID INT = NULL,
+
+    @ContactTypeName NVARCHAR(100)
+
+AS
+BEGIN
+
+    ...
+END
