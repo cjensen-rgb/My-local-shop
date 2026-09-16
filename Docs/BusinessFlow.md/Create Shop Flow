@@ -1,0 +1,71 @@
+# Create Shop Flow
+
+## Formål
+
+Opret en ny butik som medlem af My Local Shop.
+
+## Fase I
+
+Ved oprettelse registreres:
+
+### Butik
+
+- Butiksnavn
+- Adresse
+- Postnummer
+- Email
+- Hovedtelefon
+- ContactType
+
+### Primær kontaktperson
+
+Der oprettes præcis én kontaktperson.
+
+Kontaktpersonen vælges som:
+
+- Butiksejer
+eller
+- Butikschef
+
+Kontaktpersonen registreres med:
+
+- Navn
+- Titel
+- Email
+- Mobil
+
+Kontaktpersonen får eget ContactID.
+
+## Godkendelse
+
+Ambassadøren anvender primær kontaktperson ved:
+
+- Godkendelse
+- Dialog
+- Opfølgning
+- Support
+
+## ShopTalk
+
+Primær kontaktperson får adgang til:
+
+- ShopTalk
+- Notifikationer
+- Meddelelser
+
+## Fase II
+
+Efter godkendelse kan butikken oprette yderligere kontakter:
+
+- Butiksejer
+- Butikschef
+- ShopEmployee
+- Marketingansvarlig
+- Regnskabsansvarlig
+- Butiksansat
+
+Alle oprettes som selvstændige Contacts med eget ContactID.
+
+## Rettigheder
+
+Rettigheder tildeles via ContactType.
