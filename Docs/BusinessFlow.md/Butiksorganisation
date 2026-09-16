@@ -1,0 +1,17 @@
+Fase I
+
+Butik
+├── Butiksnavn
+├── Adresse
+├── Postnr.
+├── Hovedmail
+├── Hovedtelefon
+└── Kontaktperson
+
+Kontaktperson
+├── Navn
+├── Rolle
+│     ├─ Butiksejer
+│     └─ Butikschef
+├── Email
+└── Mobil
