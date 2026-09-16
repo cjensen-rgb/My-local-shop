@@ -1,0 +1,20 @@
+# Medlemsflow
+
+Alle medlemstyper oprettes via CreateMember.
+
+Et medlem identificeres efterfølgende af ContactType.
+
+Fase I
+- Opret Contact
+- Tildel ContactType
+
+Fase II
+- Bestem profiltype ud fra ContactType
+- Opret eller vedligehold relevant profil
+
+Eksempler
+
+SHOP        → ShopProfile
+SHOPPER     → ShopperProfile
+CULTURE     → CultureProfile
+ASSOCIATION → AssociationProfile
