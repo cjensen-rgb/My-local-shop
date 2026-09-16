@@ -17,5 +17,11 @@ CREATE OR ALTER PROCEDURE dbo.OpretContactFase1
 AS
 BEGIN
 
-    ...
+SET NOCOUNT ON;
+
 END
+GO
+
+
+Fixed CreateContactFase1 syntax
+``
