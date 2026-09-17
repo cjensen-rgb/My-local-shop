@@ -1,4 +1,6 @@
 Contact = Juridisk eller organisatorisk enhed
+
+CREATE member Flow Fase1 følger følgende 9 trin
 TRIN 1
 Find ContactTypeID for virksomheden
 
