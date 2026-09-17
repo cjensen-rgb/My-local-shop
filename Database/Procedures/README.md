@@ -27,3 +27,12 @@ IsPrimaryContact = 1
 
 TRIN 9
 Returnér begge GUID'er
+
+Tjek om adressen findes i forvejen. (ved ansatte i virksomheder; ved flere medlemmer pr. hustand)
+1. Find ZipID
+2. Check om Address allerede findes
+3. Hvis JA
+      brug eksisterende AddressID
+4. Hvis NEJ
+      opret ny Address
+5. Opret Contact
