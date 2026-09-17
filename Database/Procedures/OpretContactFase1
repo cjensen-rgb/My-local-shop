@@ -1,1 +1,172 @@
+CREATE OR ALTER PROCEDURE dbo.OpretContactFase1
+(
+    @Name NVARCHAR(200),
 
+    @Title NVARCHAR(200) = NULL,
+    @Email NVARCHAR(255) = NULL,
+    @Mobile NVARCHAR(50) = NULL,
+
+    @PrimaryContactName NVARCHAR(255) = NULL,
+    @PrimaryContactTypeName NVARCHAR(100) = NULL,
+    @PrimaryContactEmail NVARCHAR(255) = NULL,
+    @PrimaryContactMobile NVARCHAR(50) = NULL,
+
+    @AddressLine1 NVARCHAR(255),
+    @AddressLine2 NVARCHAR(255) = NULL,
+    @ZipCode NVARCHAR(20),
+
+    @BirthDate DATE = NULL,
+    @SexID INT = NULL,
+
+    @ContactTypeName NVARCHAR(100)
+)
+AS
+BEGIN
+
+    SET NOCOUNT ON;
+
+    DECLARE @ShopContactID UNIQUEIDENTIFIER;
+    DECLARE @PrimaryContactID UNIQUEIDENTIFIER;
+
+    DECLARE @AddressID UNIQUEIDENTIFIER;
+    DECLARE @ZipID UNIQUEIDENTIFIER;
+    DECLARE @DistrictID UNIQUEIDENTIFIER;
+
+    --------------------------------------------------
+    -- Find Zip og District
+    --------------------------------------------------
+
+    SELECT
+        @ZipID = ZipID,
+        @DistrictID = DistrictID
+    FROM dbo.Zip
+    WHERE ZipCode = @ZipCode;
+
+    IF @ZipID IS NULL
+    BEGIN
+        RAISERROR('ZipCode blev ikke fundet',16,1);
+        RETURN;
+    END
+
+    --------------------------------------------------
+    -- Find eksisterende adresse
+    --------------------------------------------------
+
+    SELECT @AddressID = AddressID
+    FROM dbo.Address
+    WHERE AddressLine1 = @AddressLine1
+      AND ISNULL(AddressLine2,'') = ISNULL(@AddressLine2,'')
+      AND ZipID = @ZipID;
+
+    --------------------------------------------------
+    -- Opret adresse hvis nødvendig
+    --------------------------------------------------
+
+    IF @AddressID IS NULL
+    BEGIN
+
+        SET @AddressID = NEWID();
+
+        INSERT INTO dbo.Address
+        (
+            AddressID,
+            AddressLine1,
+            AddressLine2,
+            ZipID,
+            DistrictID,
+            CreatedAt,
+            CreatedBy
+        )
+        VALUES
+        (
+            @AddressID,
+            @AddressLine1,
+            @AddressLine2,
+            @ZipID,
+            @DistrictID,
+            SYSUTCDATETIME(),
+            'CreateMemberFase1'
+        );
+
+    END
+
+    --------------------------------------------------
+    -- Opret butik
+    --------------------------------------------------
+
+    SET @ShopContactID = NEWID();
+
+    INSERT INTO dbo.Contact
+    (
+        ContactID,
+        Name,
+        Title,
+        Email,
+        Mobile,
+        AddressID,
+        DistrictID,
+        CreatedAt,
+        IsPrimaryContact
+    )
+    VALUES
+    (
+        @ShopContactID,
+        @Name,
+        @Title,
+        @Email,
+        @Mobile,
+        @AddressID,
+        @DistrictID,
+        SYSUTCDATETIME(),
+        0
+    );
+
+    --------------------------------------------------
+    -- Opret primær kontaktperson
+    --------------------------------------------------
+
+    IF @PrimaryContactName IS NOT NULL
+    BEGIN
+
+        SET @PrimaryContactID = NEWID();
+
+        INSERT INTO dbo.Contact
+        (
+            ContactID,
+            Name,
+            Title,
+            Email,
+            Mobile,
+            AddressID,
+            DistrictID,
+            CreatedAt,
+            ReferenceContactID,
+            IsPrimaryContact
+        )
+        VALUES
+        (
+            @PrimaryContactID,
+            @PrimaryContactName,
+            @PrimaryContactTypeName,
+            @PrimaryContactEmail,
+            @PrimaryContactMobile,
+            @AddressID,
+            @DistrictID,
+            SYSUTCDATETIME(),
+            @ShopContactID,
+            1
+        );
+
+    END
+
+    --------------------------------------------------
+    -- Returnér resultat
+    --------------------------------------------------
+
+    SELECT
+        @ShopContactID AS ShopContactID,
+        @PrimaryContactID AS PrimaryContactID,
+        @AddressID AS AddressID;
+
+END
+GO
