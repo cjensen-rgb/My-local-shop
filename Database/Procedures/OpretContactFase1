@@ -32,6 +32,9 @@ BEGIN
     DECLARE @ZipID UNIQUEIDENTIFIER;
     DECLARE @DistrictID UNIQUEIDENTIFIER;
 
+    DECLARE @ShopContactTypeID UNIQUEIDENTIFIER;
+    DECLARE @PrimaryContactTypeID UNIQUEIDENTIFIER;
+
     --------------------------------------------------
     -- Find Zip og District
     --------------------------------------------------
@@ -49,10 +52,36 @@ BEGIN
     END
 
     --------------------------------------------------
+    -- Find ContactTypeID
+    --------------------------------------------------
+
+    SELECT
+        @ShopContactTypeID = ContactTypeID
+    FROM dbo.ContactType
+    WHERE ContactTypeName = @ContactTypeName;
+
+    IF @ShopContactTypeID IS NULL
+    BEGIN
+        RAISERROR('ContactType blev ikke fundet',16,1);
+        RETURN;
+    END
+
+    IF @PrimaryContactName IS NOT NULL
+    BEGIN
+
+        SELECT
+            @PrimaryContactTypeID = ContactTypeID
+        FROM dbo.ContactType
+        WHERE ContactTypeName = @PrimaryContactTypeName;
+
+    END
+
+    --------------------------------------------------
     -- Find eksisterende adresse
     --------------------------------------------------
 
-    SELECT @AddressID = AddressID
+    SELECT
+        @AddressID = AddressID
     FROM dbo.Address
     WHERE AddressLine1 = @AddressLine1
       AND ISNULL(AddressLine2,'') = ISNULL(@AddressLine2,'')
@@ -91,7 +120,7 @@ BEGIN
     END
 
     --------------------------------------------------
-    -- Opret butik
+    -- Opret Butik / Virksomhed
     --------------------------------------------------
 
     SET @ShopContactID = NEWID();
@@ -105,6 +134,9 @@ BEGIN
         Mobile,
         AddressID,
         DistrictID,
+        ContactTypeID,
+        BirthDate,
+        SexID,
         CreatedAt,
         IsPrimaryContact
     )
@@ -117,12 +149,15 @@ BEGIN
         @Mobile,
         @AddressID,
         @DistrictID,
+        @ShopContactTypeID,
+        @BirthDate,
+        @SexID,
         SYSUTCDATETIME(),
         0
     );
 
     --------------------------------------------------
-    -- Opret primær kontaktperson
+    -- Opret Primær Kontaktperson
     --------------------------------------------------
 
     IF @PrimaryContactName IS NOT NULL
@@ -139,6 +174,7 @@ BEGIN
             Mobile,
             AddressID,
             DistrictID,
+            ContactTypeID,
             CreatedAt,
             ReferenceContactID,
             IsPrimaryContact
@@ -152,6 +188,7 @@ BEGIN
             @PrimaryContactMobile,
             @AddressID,
             @DistrictID,
+            @PrimaryContactTypeID,
             SYSUTCDATETIME(),
             @ShopContactID,
             1
