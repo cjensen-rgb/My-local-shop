@@ -1,1 +1,24 @@
+-- Test - Opret butik med primær kontaktperson
 
+EXEC dbo.OpretContactFase1
+
+    @Name = 'Trøfleriet THYRA',
+
+    @Title = 'Specialiteter fra Thy',
+    @Email = 'info@thyra.dk',
+    @Mobile = '97920688',
+
+    @PrimaryContactName = 'Anne Hansen',
+    @PrimaryContactTypeName = 'Butikschef',
+    @PrimaryContactEmail = 'anne@thyra.dk',
+    @PrimaryContactMobile = '22114455',
+
+    @AddressLine1 = 'Gl. Sjørringvej 34A',
+    @AddressLine2 = NULL,
+    @ZipCode = '7700',
+
+    @BirthDate = NULL,
+    @SexID = NULL,
+
+    @ContactTypeName = 'Lokal udvalgsbutik';
+GO
