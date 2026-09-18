@@ -7,6 +7,7 @@ EXEC dbo.OpretContactFase1
     @Title = 'Specialiteter fra Thy',
     @Email = 'info@thyra.dk',
     @Mobile = '97920688',
+    @CvrNbr = '34123535',
 
     @PrimaryContactName = 'Anne Hansen',
     @PrimaryContactTypeName = 'Butikschef',
