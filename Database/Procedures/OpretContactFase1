@@ -5,7 +5,7 @@ CREATE OR ALTER PROCEDURE dbo.OpretContactFase1
     @Title NVARCHAR(200) = NULL,
     @Email NVARCHAR(255) = NULL,
     @Mobile NVARCHAR(50) = NULL,
-
+    @CvrNbr NVARCHAR(50) = NULL,
     @PrimaryContactName NVARCHAR(255) = NULL,
     @PrimaryContactTypeName NVARCHAR(100) = NULL,
     @PrimaryContactEmail NVARCHAR(255) = NULL,
