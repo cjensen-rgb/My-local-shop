@@ -1,3 +1,11 @@
+NÅR EN CONTACT KONVERTERES TIL SHOPPER
+
+Name        = Anne Sofie Povlsen
+UserName    = AnPov
+Password    = Systemgenereret
+Status      = PendingActivation
+``
+
 Velkommen til My Local Shop
 
 Brugernavn: AnPov
