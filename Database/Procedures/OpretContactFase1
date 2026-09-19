@@ -66,7 +66,7 @@ BEGIN
         RETURN;
     END
 
-    IF @PrimaryContactName IS NOT NULL
+    IF NULLIF(LTRIM(RTRIM(@PrimaryContactName)), '') IS NOT NULL
     BEGIN
 
         SELECT
