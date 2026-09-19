@@ -1,0 +1,56 @@
+CREATE PROCEDURE dbo.ConvertContactToShopper
+(
+      @ContactID UNIQUEIDENTIFIER
+)
+AS
+BEGIN
+
+    SET NOCOUNT ON;
+
+    DECLARE @ShopperContactTypeID UNIQUEIDENTIFIER;
+    DECLARE @UserName NVARCHAR(50);
+    DECLARE @Password NVARCHAR(50);
+
+    SELECT
+        @ShopperContactTypeID = ContactTypeID
+    FROM dbo.ContactType
+    WHERE ContactTypeName = 'Shopper';
+
+    SELECT
+        @UserName =
+            LEFT(Name,2)
+            +
+            LEFT(
+                RIGHT(
+                    Name,
+                    CHARINDEX(' ', REVERSE(Name)) - 1
+                ),
+                3
+            )
+    FROM dbo.Contact
+    WHERE ContactID = @ContactID;
+
+    SET @Password =
+        CONCAT(
+            LEFT(CONVERT(varchar(36),NEWID()),4),
+            '#',
+            RIGHT(CONVERT(varchar(36),NEWID()),4)
+        );
+
+    UPDATE dbo.Contact
+    SET
+        ContactTypeID = @ShopperContactTypeID,
+        UserName      = ISNULL(UserName,@UserName)
+    WHERE ContactID = @ContactID;
+
+    SELECT
+        ContactID,
+        Name,
+        UserName,
+        @Password AS TemporaryPassword,
+        'PendingActivation' AS ShopperStatus
+    FROM dbo.Contact
+    WHERE ContactID = @ContactID;
+
+END
+GO
