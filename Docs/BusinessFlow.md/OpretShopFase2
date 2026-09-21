@@ -1,0 +1,19 @@
+Input:
+    ContactID
+
+Kontroller:
+    ContactType.IsParticipatingShop = 1
+
+Kontroller:
+    Shop findes ikke allerede
+
+Opret:
+    ShopID
+
+Kopier:
+    Contact.Name -> ShopName
+    Contact.CVRNbr -> CVR
+    Contact.AddressID -> AddressID
+
+Returnér:
+    ShopID
