@@ -1,0 +1,42 @@
+CREATE OR ALTER VIEW dbo.ShopApprovalQueueView
+AS
+
+SELECT
+
+    c.ContactID,
+    c.Name,
+    c.CvrNbr,
+
+    ct.ContactTypeName,
+
+    d.DistrictName,
+
+    c.Email,
+    c.Mobile,
+
+    a.AddressLine1,
+    z.ZipCode,
+
+    c.CreatedAt
+
+FROM dbo.Contact c
+
+INNER JOIN dbo.ContactType ct
+    ON c.ContactTypeID = ct.ContactTypeID
+
+INNER JOIN dbo.District d
+    ON c.DistrictID = d.DistrictID
+
+LEFT JOIN dbo.Address a
+    ON c.AddressID = a.AddressID
+
+LEFT JOIN dbo.Zip z
+    ON a.ZipID = z.ZipID
+
+LEFT JOIN dbo.Shop s
+    ON c.ContactID = s.ContactID
+
+WHERE
+    ct.IsParticipatingShop = 1
+    AND s.ShopID IS NULL;
+GO
