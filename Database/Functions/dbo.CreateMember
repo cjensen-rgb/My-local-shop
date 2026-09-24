@@ -1,0 +1,106 @@
+/********************************************************************************************  
+    PROCEDURE: dbo.CreateMember  
+    VERSION:   2026-08-02  
+    UPDATED BY: Claes & Copilot (Microsoft AI Assistant)  
+    PURPOSE:   Robust oprettelse af Address + Contact + District binding  
+               Understøtter 4- og 5-cifrede ZipCodes samt 0-foranstillede ZipCodes  
+********************************************************************************************/  
+  
+CREATE PROCEDURE dbo.CreateMember  
+(  
+    @Name            NVARCHAR(200),  
+    @Email           NVARCHAR(200),  
+    @Mobile          NVARCHAR(50),  
+    @AddressLine1    NVARCHAR(200),  
+    @ZipCode         NVARCHAR(10),  
+    @ContactTypeName NVARCHAR(100)  
+)  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+  
+    DECLARE @ZipID          UNIQUEIDENTIFIER;  
+    DECLARE @DistrictID     UNIQUEIDENTIFIER;  
+    DECLARE @ContactTypeID  UNIQUEIDENTIFIER;  
+    DECLARE @AddressID      UNIQUEIDENTIFIER;  
+    DECLARE @ContactID      UNIQUEIDENTIFIER;  
+  
+    ------------------------------------------------------------  
+    -- 1. Find ZipID (understøtter 4, 5 og 0-foranstillede ZipCodes)  
+    ------------------------------------------------------------  
+    SELECT @ZipID = ZipID  
+    FROM dbo.Zip  
+    WHERE ZipCode = @ZipCode;  
+  
+    IF @ZipID IS NULL  
+    BEGIN  
+        RAISERROR('ZipCode not found in dbo.Zip', 16, 1);  
+        RETURN;  
+    END  
+  
+    ------------------------------------------------------------  
+    -- 2. Find DistrictID via Zip (kræver at DistrictID er udfyldt i dbo.Zip)  
+    ------------------------------------------------------------  
+    SELECT @DistrictID = DistrictID  
+    FROM dbo.Zip  
+    WHERE ZipCode = @ZipCode;  
+  
+    IF @DistrictID IS NULL  
+    BEGIN  
+        RAISERROR('DistrictID not found for this ZipCode', 16, 1);  
+        RETURN;  
+    END  
+  
+    ------------------------------------------------------------  
+    -- 3. Find ContactTypeID  
+    ------------------------------------------------------------  
+    SELECT @ContactTypeID = ContactTypeID  
+    FROM dbo.ContactType  
+    WHERE ContactTypeName = @ContactTypeName;  
+  
+    IF @ContactTypeID IS NULL  
+    BEGIN  
+        RAISERROR('ContactTypeName not found in dbo.ContactType', 16, 1);  
+        RETURN;  
+    END  
+  
+    ------------------------------------------------------------  
+    -- 4. Create Address  
+    ------------------------------------------------------------  
+    INSERT INTO dbo.Address (AddressLine1, ZipID)  
+    VALUES (@AddressLine1, @ZipID);  
+  
+    SELECT @AddressID = AddressID  
+    FROM dbo.Address  
+    WHERE AddressLine1 = @AddressLine1  
+      AND ZipID        = @ZipID  
+    ORDER BY CreatedAt DESC;  
+  
+    ------------------------------------------------------------  
+    -- 5. Create Contact  
+    ------------------------------------------------------------  
+    INSERT INTO dbo.Contact (Name, Email, Mobile, AddressID, DistrictID, ContactTypeID)  
+    VALUES (@Name, @Email, @Mobile, @AddressID, @DistrictID, @ContactTypeID);  
+  
+    SELECT @ContactID = ContactID  
+    FROM dbo.Contact  
+    WHERE AddressID   = @AddressID  
+      AND DistrictID  = @DistrictID  
+    ORDER BY CreatedAt DESC;  
+  
+    ------------------------------------------------------------  
+    -- 6. If District Company → update District.ContactID  
+    ------------------------------------------------------------  
+    IF @ContactTypeName = 'District Company'  
+    BEGIN  
+        UPDATE dbo.District  
+        SET ContactID = @ContactID  
+        WHERE DistrictID = @DistrictID;  
+    END  
+  
+    ------------------------------------------------------------  
+    -- 7. Return ContactID to Umbraco  
+    ------------------------------------------------------------  
+    SELECT @ContactID AS ContactID;  
+  
+END  
