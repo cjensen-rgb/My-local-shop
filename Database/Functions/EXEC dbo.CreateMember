@@ -1,0 +1,7 @@
+EXEC dbo.CreateMember
+    @Name = 'Sparekassen Thy',
+    @Email = 'info@sparthy.dk',
+    @Mobile = '99195000',
+    @AddressLine1 = 'Store Torv 1',
+    @ZipCode = '7700',
+    @ContactTypeName = 'Pengeinstitut';
