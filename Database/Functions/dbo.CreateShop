@@ -1,7 +1,6 @@
 CREATE OR ALTER PROCEDURE dbo.CreateShop
 (
     @ContactID UNIQUEIDENTIFIER,
-    @ShopCategoryID UNIQUEIDENTIFIER,
     @ShopID UNIQUEIDENTIFIER OUTPUT
 )
 AS
@@ -12,22 +11,34 @@ BEGIN
     DECLARE @AddressID UNIQUEIDENTIFIER;
     DECLARE @Email NVARCHAR(400);
     DECLARE @CVR NVARCHAR(20);
+    DECLARE @ShopCategoryID UNIQUEIDENTIFIER;
     DECLARE @ShopStateID UNIQUEIDENTIFIER;
 
-    -- Aktiv/Godkendt status
+    SELECT
+        @ShopName       = Name,
+        @AddressID      = AddressID,
+        @Email          = Email,
+        @CVR            = CvrNbr,
+        @ShopCategoryID = ShopCategoryID
+    FROM dbo.Contact
+    WHERE ContactID = @ContactID;
+
+    IF @ShopCategoryID IS NULL
+    BEGIN
+        RAISERROR('ShopCategoryID is NULL on Contact.',16,1);
+        RETURN;
+    END;
+
     SELECT TOP 1
         @ShopStateID = ShopStateID
     FROM dbo.ShopState
     WHERE ShopStateName = 'Approved';
 
-    -- Hent oplysninger fra Contact
-    SELECT
-        @ShopName = Name,
-        @AddressID = AddressID,
-        @Email = Email,
-        @CVR = CvrNbr
-    FROM dbo.Contact
-    WHERE ContactID = @ContactID;
+    IF @ShopStateID IS NULL
+    BEGIN
+        RAISERROR('Approved ShopState not found.',16,1);
+        RETURN;
+    END;
 
     SET @ShopID = NEWID();
 
