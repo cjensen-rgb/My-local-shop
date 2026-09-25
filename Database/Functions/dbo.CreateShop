@@ -1,0 +1,73 @@
+CREATE OR ALTER PROCEDURE dbo.CreateShop
+(
+    @ContactID UNIQUEIDENTIFIER,
+    @ShopCategoryID UNIQUEIDENTIFIER,
+    @ShopID UNIQUEIDENTIFIER OUTPUT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @ShopName NVARCHAR(400);
+    DECLARE @AddressID UNIQUEIDENTIFIER;
+    DECLARE @Email NVARCHAR(400);
+    DECLARE @CVR NVARCHAR(20);
+    DECLARE @ShopStateID UNIQUEIDENTIFIER;
+
+    -- Aktiv/Godkendt status
+    SELECT TOP 1
+        @ShopStateID = ShopStateID
+    FROM dbo.ShopState
+    WHERE ShopStateName = 'Approved';
+
+    -- Hent oplysninger fra Contact
+    SELECT
+        @ShopName = Name,
+        @AddressID = AddressID,
+        @Email = Email,
+        @CVR = CvrNbr
+    FROM dbo.Contact
+    WHERE ContactID = @ContactID;
+
+    SET @ShopID = NEWID();
+
+    INSERT INTO dbo.Shop
+    (
+        ShopID,
+        CreatedAt,
+        UpdatedAt,
+        ShopName,
+        ShopStateID,
+        AddressID,
+        Email,
+        CVR,
+        ContactID,
+        ShopCategoryID,
+        Active,
+        AcceptsShopperGroups,
+        AcceptsSeniorShopperGroups,
+        AcceptCafeBonus,
+        AcceptCultureBonus,
+        AcceptsBingo
+    )
+    VALUES
+    (
+        @ShopID,
+        GETDATE(),
+        GETDATE(),
+        @ShopName,
+        @ShopStateID,
+        @AddressID,
+        @Email,
+        @CVR,
+        @ContactID,
+        @ShopCategoryID,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1
+    );
+END;
+GO
