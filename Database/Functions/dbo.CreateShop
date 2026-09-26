@@ -29,16 +29,7 @@ BEGIN
         RETURN;
     END;
 
-    SELECT TOP 1
-        @ShopStateID = ShopStateID
-    FROM dbo.ShopState
-    WHERE ShopStateName = 'Approved';
-
-    IF @ShopStateID IS NULL
-    BEGIN
-        RAISERROR('Approved ShopState not found.',16,1);
-        RETURN;
-    END;
+    DECLARE @StatusCode INT = 30;
 
     SET @ShopID = NEWID();
 
@@ -48,7 +39,6 @@ BEGIN
         CreatedAt,
         UpdatedAt,
         ShopName,
-        ShopStateID,
         AddressID,
         Email,
         CVR,
@@ -67,7 +57,6 @@ BEGIN
         GETDATE(),
         GETDATE(),
         @ShopName,
-        @ShopStateID,
         @AddressID,
         @Email,
         @CVR,
