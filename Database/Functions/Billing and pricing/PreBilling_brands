@@ -1,0 +1,94 @@
+CREATE   PROCEDURE PreBilling_Brands  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+  
+    ---------------------------------------------------------  
+    -- 1) Opret TEMP-tabel  
+    ---------------------------------------------------------  
+    IF OBJECT_ID('tempdb..#BillingPreview_Brands') IS NOT NULL  
+        DROP TABLE #BillingPreview_Brands;  
+  
+    CREATE TABLE #BillingPreview_Brands  
+    (  
+        BrandID UNIQUEIDENTIFIER,  
+        BrandName NVARCHAR(200),  
+        DistrictCount INT,  
+        BillingInterval INT,  
+        PricePerDistrictPerMonth DECIMAL(18,2),  
+        Amount DECIMAL(18,2),  
+        PriceModel INT  
+    );  
+  
+    ---------------------------------------------------------  
+    -- 2) Beregn PreBilling-linjer  
+    ---------------------------------------------------------  
+    INSERT INTO #BillingPreview_Brands  
+    (  
+        BrandID,  
+        BrandName,  
+        DistrictCount,  
+        BillingInterval,  
+        PricePerDistrictPerMonth,  
+        Amount,  
+        PriceModel  
+    )  
+    SELECT  
+        b.BrandID,  
+        b.BrandName,  
+        COUNT(d.DistrictID) AS DistrictCount,  
+        p.BillingInterval,  
+        p.PricePerDistrictPerMonth,  
+        COUNT(d.DistrictID) * p.PricePerDistrictPerMonth AS Amount,  
+        p.PriceModel  
+    FROM Brand b  
+    JOIN BrandDistrictLicense l ON l.BrandID = b.BrandID AND l.IsActive = 1  
+    JOIN District d ON d.DistrictID = l.DistrictID  
+    JOIN BrandPriceModel p ON p.BrandID = b.BrandID  
+    GROUP BY  
+        b.BrandID,  
+        b.BrandName,  
+        p.BillingInterval,  
+        p.PricePerDistrictPerMonth,  
+        p.PriceModel;  
+  
+    ---------------------------------------------------------  
+    -- 3) Beregn BatchTotal og LineCount  
+    ---------------------------------------------------------  
+    DECLARE @BatchTotal DECIMAL(18,2);  
+    DECLARE @LineCount INT;  
+    DECLARE @BatchID UNIQUEIDENTIFIER = NEWID();  
+  
+    SELECT   
+        @BatchTotal = SUM(Amount) + COUNT(*),  
+        @LineCount = COUNT(*)  
+    FROM #BillingPreview_Brands;  
+  
+    ---------------------------------------------------------  
+    -- 4) Log PreBilling i BillingBatchLog  
+    ---------------------------------------------------------  
+    INSERT INTO BillingBatchLog  
+    (  
+        BatchID,  
+        BillingType,  
+        BatchTotal,  
+        LineCount,  
+        CreatedAt,  
+        Faktureret  
+    )  
+    VALUES  
+    (  
+        @BatchID,  
+        'Brands',  
+        @BatchTotal,  
+        @LineCount,  
+        GETDATE(),  
+        0  
+    );  
+  
+    ---------------------------------------------------------  
+    -- 5) Returnér BatchID til BillingMotor  
+    ---------------------------------------------------------  
+    SELECT @BatchID AS BatchID;  
+  
+END;  
