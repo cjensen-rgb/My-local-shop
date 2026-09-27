@@ -1,0 +1,137 @@
+  
+/******************************************************************************************  
+  Procedure: RunBilling  
+  Version: 2.4  
+  Created: 2026-06-20  
+  Updated By: Claes / Copilot  
+  Description:  
+      Faktureringsmotor der automatisk finder nyeste Pending batch,  
+      opretter Invoice + InvoiceLine og opdaterer BillingRegister.  
+******************************************************************************************/  
+  
+CREATE PROCEDURE dbo.RunBilling  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+  
+    ------------------------------------------------------------------------  
+    -- 1) Find nyeste Pending batch  
+    ------------------------------------------------------------------------  
+    DECLARE @BillingBatchID UNIQUEIDENTIFIER;  
+  
+    SELECT TOP 1 @BillingBatchID = BillingBatchID  
+    FROM dbo.BillingRegister  
+    WHERE Status = 'Pending'  
+    ORDER BY CreatedAt DESC;  
+  
+    IF @BillingBatchID IS NULL  
+    BEGIN  
+        RAISERROR('Ingen Pending batch fundet.', 16, 1);  
+        RETURN;  
+    END;  
+  
+    ------------------------------------------------------------------------  
+    -- Variabler  
+    ------------------------------------------------------------------------  
+    DECLARE   
+        @BillingRegisterID UNIQUEIDENTIFIER,  
+        @ShopID UNIQUEIDENTIFIER,  
+        @DistrictID UNIQUEIDENTIFIER,  
+        @Amount DECIMAL(18,2),  
+        @InvoiceID UNIQUEIDENTIFIER,  
+        @InvoiceNumber NVARCHAR(50),  
+        @NextSeq BIGINT;  
+  
+    ------------------------------------------------------------------------  
+    -- 2) Cursor over alle rækker i batch  
+    ------------------------------------------------------------------------  
+    DECLARE BillingCursor CURSOR FOR  
+        SELECT BillingRegisterID, ShopID, DistrictID, Amount  
+        FROM dbo.BillingRegister  
+        WHERE BillingBatchID = @BillingBatchID  
+          AND Status = 'Pending';  
+  
+    OPEN BillingCursor;  
+    FETCH NEXT FROM BillingCursor INTO @BillingRegisterID, @ShopID, @DistrictID, @Amount;  
+  
+    ------------------------------------------------------------------------  
+    -- 3) Loop  
+    ------------------------------------------------------------------------  
+    WHILE @@FETCH_STATUS = 0  
+    BEGIN  
+        --------------------------------------------------------------------  
+        -- Hent næste fakturanummer fra korrekt sequence  
+        --------------------------------------------------------------------  
+        SELECT @NextSeq = NEXT VALUE FOR dbo.InvoiceNumberSequence_DK;  
+  
+        SET @InvoiceNumber = CONCAT('DK', FORMAT(@NextSeq, '000000'));  
+        SET @InvoiceID = NEWID();  
+  
+        --------------------------------------------------------------------  
+        -- 4) Opret Invoice  
+        --------------------------------------------------------------------  
+        INSERT INTO dbo.Invoice (  
+            InvoiceID,  
+            InvoiceNumber,  
+            ProfileID,  
+            ShopID,  
+            DistrictID,  
+            InvoiceDate,  
+            DueDate,  
+            TotalAmount,  
+            PaymentStatus,  
+            PaymentNote,  
+            CreatedAt,  
+            CompletedAt  
+        )  
+        VALUES (  
+            @InvoiceID,  
+            @InvoiceNumber,  
+            @ShopID,  
+            @ShopID,  
+            @DistrictID,  
+            CAST(GETDATE() AS date),  
+            DATEADD(DAY, 8, GETDATE()),  
+            @Amount,  
+            'Paid',  
+            'Betaling er trukket på det registrerede kort.',  
+            GETDATE(),  
+            GETDATE()  
+        );  
+  
+        --------------------------------------------------------------------  
+        -- 5) Opret InvoiceLine  
+        --------------------------------------------------------------------  
+        INSERT INTO dbo.InvoiceLine (  
+            InvoiceLineID,  
+            InvoiceID,  
+            Description,  
+            Amount,  
+            CreatedAt  
+        )  
+        VALUES (  
+            NEWID(),  
+            @InvoiceID,  
+            CONCAT('Abonnement for shop ', @ShopID, ' i district ', @DistrictID),  
+            @Amount,  
+            GETDATE()  
+        );  
+  
+        --------------------------------------------------------------------  
+        -- 6) Opdater BillingRegister  
+        --------------------------------------------------------------------  
+        UPDATE dbo.BillingRegister  
+        SET   
+            InvoiceNumber = @InvoiceNumber,  
+            InvoiceDate = GETDATE(),  
+            Status = 'Completed'  
+        WHERE BillingRegisterID = @BillingRegisterID;  
+  
+        FETCH NEXT FROM BillingCursor   
+        INTO @BillingRegisterID, @ShopID, @DistrictID, @Amount;  
+    END;  
+  
+    CLOSE BillingCursor;  
+    DEALLOCATE BillingCursor;  
+  
+END;  
