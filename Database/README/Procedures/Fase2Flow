@@ -1,0 +1,24 @@
+Contact
+│
+├── Kontaktdata
+├── Adresse
+├── District
+├── Roller
+└── Relationer
+      ↓
+Shop
+│
+├── ShopID
+├── ContactID
+└── Basis shop information
+      ↓
+ShopProfile
+│
+├── StoryTelling
+├── Video
+├── Podcast
+├── Brands
+├── Kategorier
+├── Services
+├── ShopTalk
+└── Matchprofil
