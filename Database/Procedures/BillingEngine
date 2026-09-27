@@ -1,0 +1,42 @@
+Billing Engine
+==============
+
+RunBilling
+-----------
+Kører den egentlige fakturering.
+
+PreBilling
+----------
+Genererer faktureringsgrundlag for Shops.
+
+PreBillingBrands
+----------------
+Genererer faktureringsgrundlag for BrandHolders.
+
+SubscriptionPrice
+-----------------
+Indeholder abonnementspriser.
+
+SubscriptionPriceShopSize
+-------------------------
+Kobler prisstruktur til butiksstørrelse.
+
+PriceModel
+----------
+Overordnet prismodel.
+
+PriceModelType
+--------------
+Definerer prismodeltyper.
+
+PriceModelMatrix
+----------------
+Prisregler og beregningsmatricer.
+
+BrandDistrictLicense
+--------------------
+Registrerer aktive brandlicenser pr. distrikt.
+
+BrandHolderPayment
+------------------
+Betalinger fra brandholdere.
