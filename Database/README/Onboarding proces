@@ -1,0 +1,21 @@
+1. Shop oprettet
+   Status 50 = ProfilePending
+
+2. Basisprofil udfyldt
+   ShopBasisProfile
+
+3. Brands tilknyttet
+   ShopProfileBrand
+
+4. ItemCategories tilknyttet
+   ShopProfile_ItemCategory
+
+5. SubCategories tilknyttet
+   ShopProfile_ItemSubCategory
+
+6. Profil valideret
+   Status 60 = PendingPayment
+
+7. BillingMotor
+
+8. Status 70 = Active
