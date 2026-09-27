@@ -1,0 +1,19 @@
+Billing
+│
+├── PriceModel
+│       1 National pris
+│       2 Specialpris
+│       3 ShopSize-baseret pris
+│
+├── PriceModelMatrix
+│       ContactType → PriceModel
+│
+├── SubscriptionPrice
+│
+├── SubscriptionPriceShopSize
+│
+├── PreBilling
+│
+├── PreBillingBrands
+│
+└── RunBilling
