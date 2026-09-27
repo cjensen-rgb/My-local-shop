@@ -1,0 +1,43 @@
+-- =============================================  
+-- Procedure: PreBilling  
+-- Description: Generates pending billing rows for all shops with StatusCode = 60 (BillingPending)  
+-- Version: 1.0  
+-- Last Modified: 2026-06-19 15:52  
+-- Author: Claes  
+-- =============================================  
+  
+CREATE   PROCEDURE dbo.PreBilling  
+(  
+    @BillingBatchID UNIQUEIDENTIFIER  
+)  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+  
+    INSERT INTO dbo.BillingRegister  
+    (  
+        BillingRegisterID,  
+        BillingBatchID,  
+        ShopID,  
+        ShopName,  
+        ShopSizeName,  
+        DistrictID,  
+        Amount,  
+        Status,  
+        CreatedDate  
+    )  
+    SELECT  
+        NEWID(),  
+        @BillingBatchID,  
+        sp.ShopID,  
+        sp.ShopName,  
+        sp.ShopSizeName,  
+        sp.DistrictID,  
+        spss.AnnualPrice,  
+        'Pending',  
+        SYSDATETIME()  
+    FROM dbo.ShopView sp  
+    JOIN dbo.SubscriptionPriceShopSizeView spss  
+        ON spss.ShopSizeID = sp.ShopSizeID  
+    WHERE sp.StatusCode = 60;   -- BillingPending  
+END;  
